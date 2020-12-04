@@ -1,0 +1,51 @@
+
+1. INPUT DATA, x
+
+I am now considering bidisperse blends, where the individual components may themselves be polydisperse. Thus, the input vector is x = (Z1, Z2, pd1, pd2, w1) instead of the previous x = (Z1, Z2, w1).
+
+Z1, Z2 are confined to [5, 50]
+pd1, pd2 are confined to [1.01, 1.5]
+w1 = (0, 1], with Z1 > Z2 as before
+
+
+********************************************
+2. OUTSIDE PROGRAMS
+
+In principle, you don't have to touch either of these programs.
+
+1. tdd.py - has the simulation model (TDD-DR). Since it is based on double reptation, it is relatively fast. I ditched the idea of using the slip link model, because it takes too long for polydisperse samples.
+
+This program generates (t, phi)
+
+2. contSpec.py - takes (t, phi) via the file "relax.dat" and prints out a spectrum "h.dat"
+
+parameters for the program are set through the input file "inpReSpect.dat"
+
+*********************************************
+
+
+3. GP routine
+
+I split the jupyter notebook into 3 parts.
+
+1. genTrain.py: generates the training data and stores it in TrainData/
+- xtrain.dat contains the samples, and h*.dat are corresponding spectra in order
+- note that internally I divide Z1 and Z2 by Zmax = 50, so that all elements of "x" are of order 1.
+- TASK FOR PANKAJ: right now I am using uniform sampling. You should get it to use LHC, and save the results of all the calculations permanently.
+
+
+2. commonGP.py
+- this contains functions required during training the hyperparameters, and during predictions. This module is imported by the following two functions.
+
+3. trainHyper.py: reads TrainData/ and fits the values of the hyperparameters [7 parameters now, due to pd]
+- also I run 10 replicas during the fitting and pick the best one.
+- this is still the rate-limiting step
+- TASK FOR PANKAJ: I haven't incorporated the Jacobian, so calculation is somewhat slow right now.
+
+4. predictGP.py: reads TrainData/ and also "TrainData/hyper.dat" and makes a prediction.
+
+A typical sequence involves:
+python3 genTrain.py [adjust sampling]
+python3 trainHyper.py 
+predictGP.py [adjust test point]
+
