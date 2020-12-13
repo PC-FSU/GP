@@ -87,5 +87,237 @@ Following are the scripts :
        
 
 
+-->ContSpec.py => Help to find continuous spectrum (Unchanged from original version)
+
+ Help to find continuous spectrum
+ March 2019 major update:
+ (i)   added plateau modulus G0 (also in pyReSpect-time) calculation
+ (ii)  following Hansen Bayesian interpretation of Tikhonov to extract p(lambda)
+ (iii) simplifying lcurve (starting from high lambda to low)
+ (iv)  changing definition of rho2 and eta2 (no longer dividing by 1/n and 1/nl)
 
 
+-->genTest.py  => Routine to generate test datasets (New script)
+
+  This Script Generate Test Data, I am gonna include Xtest data in Zip file so in general you don't have to run this script. 
+   
+  This script takes argument:
+     ## Flags to set value for data generation routine.
+    1. Sample_Size : Number of sample tha you want to draw from hypercubic sampling for test data
+          Note: The generated Sample are then subjected to constrained offer by our problem, like M1>M2,
+                This lead to elimination of half of the genearted sample, so in reality we actual size is 
+                ~Sample_Size/2.
+    2. Param_Value: "value for (Z_min,Z_max,pdmin,pdmax), fixed for our case, but in case if we want to update it."
+    3. Seed:  seed use to generate hypercubic samples
+    
+     ##Flags for visualization purpose
+    4. isPlot: Flag to plot the drawn hypercubic test sample.
+    5. isPlot_predictions: 'Flag to visualize prediction on random test data, Note:- The data genertaed by this flag is not going be saved, only prediction is going to be plotted.'
+    6. Check_prediction: If true prediction will be done on a single training samples, This is just a 
+                         extra utilities, can be removed.
+
+      ##Flags to generate the test data for performing error analysis with different xtrain size,n.
+    7. nreplica: Number of Copy of xtest data of size Sample_Size, you need to generate
+                 Note: when nreplica == 0, a passed seed or seed=0 is selected and kept same for other 
+                       nreplica - 1. 
+
+    8. Gen_Data: If True, This will generate (nreplica) copy of different xtest data (of size 
+                        Sample_Size) for running test_error_analysis.py and save it in TestData Folder").
+                The data will be saved in TestData Folder, with filename xtest_0.dat...to...
+                xtest_neplica.dat. Note: if Gen_data is True and there are existing file in TestData folder, 
+                it will delete all the exisiting data and then rewrites the data.
+                
+  How to run:
+     To create data only for Visualizing prediction
+     => python genTest.py --Sample_Size 100 --isPlot_predictions True
+     To create data and save it for future analysis
+     => python genTest.py --Sample_Size 100 --Gen_Data True --nreplica 5
+   
+   
+-->genTrain.py => Routine to generate train DataSets ( Major change from old version )
+
+
+ This is a python3 script which generates bidisperse blend: Z = [x, x], pd = [x, x], w1 = x by either uniform  or hypercubic sampling and then:
+               (1) runs TDD and outputs phi(t)
+               (2) runs pyReSpect on fixed "s" grid and output H(s)
+
+
+  This Script Generate Train Data (h.dat and xtrain.dat). I am going to include training data in Zip file so in general you don't have to run this script.
+
+   
+  This script takes argument:
+    1. Sample_Size : Number of sample tha you want to draw from hypercubic sampling for train data
+          Note: The generated Sample are then subjected to constrained offer by our problem, like M1>M2,
+                This lead to elimination of half of the genearted sample, so in reality we actual size is 
+                ~Sample_Size/2.
+    2. nw :  value for param w
+    3. npd : value for param pd
+    4. nz :  value for param Z
+    Note: The above three argument (nw,npd,nz) is used only in generating uniform sampling data not hypercubic sampling 
+    5. Param_Value: "value for (Z_min,Z_max,pdmin,pdmax), fixed for our case, but in case.
+    6. isPlot: Flag to plot the hypercubic or uniform test sample 
+    7. isSave: if True save the *.dat file in TrainData  
+
+   How to run:
+       python genTrain.py --Sample_Size 100 --isSave True/False --(Other_Flags as desired)
+       
+
+-->Load_Workspace.py => Routine that handel the loading,saving and clearing of Workspace (New scrpit)
+  
+     This python script takes care of Loading, clearing, and saving data available on trainData Workspace. 
+     TrainData Workspace is workspace defined by all .dat file present in TrainData folder, not in it's
+     subfolder (50,200,1600 etc.)
+
+     The script takes in argument : 
+     1. ClearWorkspace,  Pass True if you want to remove all the .dat file from TrainData Folder.
+                        Note :- It's not going to clear any file in subfolders.  
+                        To run: pyhthon LoadWorkspace.py --ClearWorkspace True 
+
+     2. load, Pass True if you want to load data to workspace.                
+                        To run: pyhthon LoadWorkspace.py --load True --Folder 50 
+                         Note:- pass the folder flag along with it, to specify from which subfolder to load the data.
+
+     3. SaveCurrent, Pass True if you want to save data to workspace, note: In order to saveCurrent to work               
+                         you need to  pass the folder flag along with it, to specify to which subfolder to save the data.
+                        (Note : if you are saving to a exisiting subfolder it will first clear all the data of subfolder 
+                        and save the current file). This is generally run to save the data file (*.dat) and hyper.dat in 
+                        case of successful convegrnece of optization routine. 
+                        To run: pyhthon LoadWorkspace.py --SaveCurrent True --Folder 100 
+
+--> plotParam.py => Plot optimize param vs n (New script)
+
+ This script plot optimize param (SIGMA,GAMMA,TIME, LIKLIHOOD ) for different length of taraining data(n)
+
+ The script takes in argument:
+      1. Folder_list: Pass the different subfolder name for plotting the corresponding params. For example if you 
+                 pass 50 100 200, param will be plotted for these three n values
+ To run:
+        python plotParam.py --Folder_list 50 100 200 400
+  
+  
+--> predictGP.py => Prediction routines ( Moderate Change from your version)
+
+
+      This Python Script mainly contain the routine required to plot the prediction. The Differene betwenn 
+      this and original version is 1) i have included a functon that genratws phi,t back from h,s. 2)  
+      modification in function plotPredTrian,(Basically now it has a routine to check for whether  
+      original data lie within the range (prediction + 2.5*SD,prediction - 2.5*SD)  
+      
+      No argument are required for this script.
+      To Run:- python predictGP.py
+  
+--> Profiler.py  => Routine to profile code (New script)
+  
+  
+  This script will run a deterministic profiler on trainHyper.py 
+  The script takes in two argument:
+   1. Whether to include jacobian for trainHyper.py routine
+   2. How many time a optimzation process is ran
+
+  To run the :
+   make sure you have the correct data in workspace, if not run the following two commands 
+   1. python Load_workspace.py --ClearWorkspace True
+   2. python Load_workspace.py --load True --Folder 50 or whatever
+   3. python profiler.py --nreplica 10 or 5 (or your choice)
+
+  I have also attached code for running a line profiler, if you wish to use line-profiler (anothr 
+  deterministic profiler), please comment the code and uncomment the section at bottom
+
+
+
+-->  tdd.py => Program implements double reptation model (Unchnaged Script)
+
+ 
+  2/11/2020: Version 3, where I only use one method (Schiebers), and as base case use float(Z)
+           : using integers only if requested.
+  Program implements double reptation model (DRM) for
+  (a) Blends of monodisperse fractions (phiFxn) given (w, Z)
+  (b) Polydisperse blend with logNormal distribution given (Zw and pd)
+ 	  The latter module plotPhiPD works well only when pd >= 1.01 (which is rather polydisperse)
+ 	  when pd is small, the distribution formally becomes a Dirac delta, leading to poor numerical integration
+
+
+--> trainHyper.py => Program implements training Routine (Moderate change from original script)
+
+  This is a python3 script which takes in a bidisperse blend: Z = [x, x], pd = [x, x], w1 = x
+   (1) reads in input data from TrainData/ [xtrain and h*.dat]
+   (2) using functions from commonGP.py, optimizes the hyper-parameters
+
+ 
+  This python script takes in the following argument:
+   1. include_jacobian: If yes, Jacobian will be used in optimization process
+   2. nreplica: # of time optimization routine is ran 
+   3. isSave:  if yes, the hyperparam's will be saved in a file hyper.dat in path TrainData/
+   4. isDebug : if true, the decompose plot will be plotted for each param, default is false
+   
+  Note: For this script to work on some data corresponding .dat file should need to be  
+       present in TrainData/ Workspace. Please run the following commands before running the trainHyper.py
+       *   python load_Wokspace.py --ClearWorkspace True
+       *   python load_Workspace.py --load True --Folder (Folder name)
+  Then run trainHyper.py
+       * python trainHyper.py --nreplica 10 --isSave False
+       
+ 
+--> Visualize_DF_and_CP-V2.py => Program implements decomposition of DF and CP and plot them ( New Script)
+  
+  This python script plot CP,DF with different param.
+  The script takes in following argument: 
+    1. paramNum: Plot the CP,DF decomposition for sigma_2,gamma_1,gamma_21,gamma_22,gamma_23,gamma_24 for
+                 paramNum 0,1,2,3,4,5,6 respectively.
+    2. Folder: (NOte: dtype = int) It will load the training data of given folder to trainData workspace. 
+    3. SpanLogLim_list : the x-axis limits for plooting the params.       
+ 
+  To run: 
+    For example if you want to plot sigma_2 for folder 100 in loglimit -1 -0.4 you will pass the following 
+    :- python visualize_df_and_cf-V2.py --Folder 100 --paramNum 0 --SpanLogLim_list -1 -0.4
+ 
+    Note: This script will clear the workspace and load the data for you (from the folder passed above) 
+    No need to clear the data and load the data
+   
+   
+   
+--> Visualize_Hvs&PhivsT.py => Program Plots a a figure instance with 3 subplots. See script for description(New script)    
+
+   This Scripy plot 3 subplots on a single figure instance
+   first subplot plot prediction on training data 
+   second subplot plot predition ( H vs S) on a unknown test sample
+   Third plot plot's phi vs T for same unknown data
+  
+   To Run:- python Visualize_Hvs&PhivsT.py
+  
+--> visualize_spectrum.py => Program plots HvsS for different polydisperscity.(New script)
+    
+ 
+   This script plot t,phi and corresponding relaxation spectra s,H for a given input
+   To Run:- python visualize_spectrum.py
+   
+--> Visualize_TestErrorAnalysis.py => Program run and plot mean and median absolute deviation for test error analysis (New Script).
+
+
+ 
+  This python script plot the mean and median deviation between mean prediction and actual result, also we can 
+  use this script to analysis whether the actual value is in range of +-2.5 SD of predicted value. 
+ 
+  This script takes in following argument:
+  1. idx: I have 10 different test set in TrainData folder where each data has ~25 examples, so idx run
+          will consider first idx number of test set to run the analysis, (Note: it should be <= 10,as
+          there's only 10 test dataset.  
+ 
+  2. Folder_list: List of test data folder used for analysis, for example, if you want to consider n = 50,100
+                 200 and 400 you need to pass Folder_list argument as ( --Folder_list 50 100 200 400).
+ 
+  3. Adverserial: If true the test will be done on adverserial test set. Adverserial test have example which 
+                  are on extreme end of our input space. Note: You don't need idx flag if you are running it
+                  for Adverserial example.
+
+  To run the script: Normal example:-
+          python Visualize_TestErrorAnalysis.py --idx 5 --Folder_list 50 100 200
+ 
+          Adverserial example:
+            python Visualize_TestErrorAnalysis.py --Folder_list 50 100 200 --Adverserial True
+
+   Note: All the loading and cleaning of workspace is automated in this script.
+ 
+
+
+  
