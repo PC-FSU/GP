@@ -283,7 +283,13 @@ Following are the scripts :
    second subplot plot predition ( H vs S) on a unknown test sample
    Third plot plot's phi vs T for same unknown data
   
-   To Run:- python Visualize_Hvs&PhivsT.py
+    To Run:-  
+     First Make sure that appropriate data is loaded in workspace
+       python load_workspace.py --ClearWorkspace True
+       python load_workspace.py --load True --Folder 50/100/200...
+     Now run the main routine:
+       python Visualize_HvsSPhivsT.py
+
   
 --> visualize_spectrum.py => Program plots HvsS for different polydisperscity.(New script)
     
