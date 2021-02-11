@@ -297,12 +297,11 @@ Following are the scripts :
    This script plot t,phi and corresponding relaxation spectra s,H for a given input
    To Run:- python visualize_spectrum.py
    
---> Visualize_TestErrorAnalysis.py => Program run and plot mean and median absolute deviation for test error analysis (New Script).
+--> Visualize_TestErrorAnalysis.py => Program plots 3 subplots. Mean and median absolute deviation of Phi and H for diffeernt test set. The third subplot plots how 
+                                      uncertainty estimate varies with n(New Script).
 
 
  
-  This python script plot the mean and median deviation between mean prediction and actual result, also we can 
-  use this script to analysis whether the actual value is in range of +-2.5 SD of predicted value. 
  
   This script takes in following argument:
   1. idx: I have 10 different test set in TrainData folder where each data has ~25 examples, so idx run
