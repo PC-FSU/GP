@@ -67,68 +67,30 @@ def predict(x, sv, xtrain, Zv, param):
     return h_pred, np.sqrt(np.abs(dh_pred))
 
 
-
-
-
-def plotPredTrain(hp, dhp, sv, xp, meanZ,plot=False):
-    
-    N = len(sv)
-    
-    hp = hp + meanZ
-
-    # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
-    Zmax = 50.0
-    t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
-    np.savetxt("relax.dat", np.c_[t, phi])
-    par  = spec.readInput('inpReSpect.dat')    
-    H, _ = spec.getContSpec(par)
-    h_true = np.exp(H)
-    
-    
+def geterror(true_val,predicted_val,SD):
+        
     #*****The code below calculate results that are used for test error analysis*****************
     
     #Error b/w true and prediction
-    error = np.sum(np.abs(h_true-hp))/len(h_true)
+    error = np.sum(np.abs(true_val-predicted_val))/len(true_val)
     
     # Create a dict placeholder to store ==> whether prediction is in range, fraction of partical out and
     # which points are out
     Prediction_InRange = {}
-    IsUp_out   = hp + 2.5*dhp >= h_true
-    IsDown_out = h_true >= hp - 2.5*dhp
+    IsUp_out   = predicted_val + 2.5*SD >= true_val
+    IsDown_out = true_val >= predicted_val - 2.5*SD
     Prediction_InRange['isInRange']   = np.all([np.all(IsUp_out),np.all(IsDown_out)])
     Union_upout_and_downout = np.r_[IsUp_out,IsDown_out]
     Value , Counts = np.unique(Union_upout_and_downout,return_counts=True)
+    
     if len(Value)>1:
         Prediction_InRange['OutRange_fraction'] = Counts[0]/(Counts[0]+Counts[1])
     else:
         Prediction_InRange['OutRange_fraction'] = 0
+        
     Prediction_InRange['Which_Out'] = [idx for idx in range(len(Union_upout_and_downout)) if Union_upout_and_downout[idx] == False]
     
-    
-    #***************************************************************************************#
-    if plot:
-        plt.plot(sv, hp, linewidth=4, label='est')
-        plt.fill_between(sv, hp - 2.5*dhp, hp + 2.5*dhp, alpha=0.1)
-
-        plt.plot(sv, h_true, 'gray',linewidth=4, alpha=0.5, label='true')   
-        #plt.plot(sv, abs(h_true-hp),label="Prediction_error")
-        plt.xscale('log')
-        plt.xlabel('$s$',fontsize=22)
-        plt.ylabel('$h$',fontsize=22)
-        plt.xticks(fontsize= 14)
-        plt.yticks(fontsize= 14)
-
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
-        #plt.plot(np.abs((h_true-hp)))
-        #plt.plot(np.exp(h_true-hp)/np.exp(h_true))
-        #plt.show()
-    
-    #print(error)
-    #print(Prediction_InRange)
-    return error,hp,h_true,Prediction_InRange
-
+    return error,Prediction_InRange
 
 def Gt(s, hs, dhp):
     
@@ -152,6 +114,94 @@ def Gt(s, hs, dhp):
 
     return t, Gt,dphi
 
+
+def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
+    #
+    # getPhiFromH: if true, the test error will also run for phi vs T
+    # 
+    N = len(sv)
+    
+    hp = hp + meanZ
+
+    # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
+    Zmax = 50.0
+    t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
+    np.savetxt("relax.dat", np.c_[t, phi])
+    par  = spec.readInput('inpReSpect.dat')    
+    H, _ = spec.getContSpec(par)
+    h_true = np.exp(H)
+    
+    
+    if getPhifromH:
+        #for phi vs t
+        #get back predicted phi and t, and i am not sure that whether that dphi given by this routine is right
+        #The mean look fine but SD look's kind of weird.
+        
+        #call GT function which gives back phi and t from H and S   
+        t,phi_predicted,dphi_predicted = Gt(sv, hp, dhp)
+        
+        #get back true phi
+        _,phi_true,dphi_true = Gt(sv, h_true, dhp) 
+        #compute the error
+        error,Prediction_InRange = geterror(phi_true,phi_predicted,dphi_predicted)
+        
+        
+        #h_upper = hp + dhp 
+        #_,phi_upper,_ = Gt(sv,h_upper, dhp)
+        #dphi_predicted = phi_upper - phi_predicted
+        #get back true phi
+        #_,phi_true,dphi_true = Gt(sv, h_true, dhp)
+        
+        #compute the error
+        error,Prediction_InRange = geterror(phi_true,phi_predicted,dphi_predicted)
+        print(Prediction_InRange)
+        
+        if plot:      
+            plt.plot(t, phi_predicted, linewidth=4, label='est')
+            plt.fill_between(t, phi_predicted - 2.5*dphi_predicted, hp + 2.5*dphi_predicted, alpha=0.1)
+
+            plt.plot(t, phi_true, 'gray',linewidth=4, alpha=0.5, label='true')   
+            #plt.plot(sv, abs(h_true-hp),label="Prediction_error")
+            plt.xscale('log')
+            plt.xlabel('$t$',fontsize=22)
+            plt.ylabel('$\Phi$',fontsize=22)
+            plt.xticks(fontsize= 14)
+            plt.yticks(fontsize= 14)
+
+            plt.legend()
+            plt.tight_layout()
+            plt.show()      
+    
+    else:    
+        error,Prediction_InRange = geterror(h_true,hp,dhp)
+        #***************************************************************************************#
+        if plot:
+
+            plt.plot(sv, hp, linewidth=4, label='est')
+            plt.fill_between(sv, hp - 2.5*dhp, hp + 2.5*dhp, alpha=0.1)
+
+            plt.plot(sv, h_true, 'gray',linewidth=4, alpha=0.5, label='true')   
+            #plt.plot(sv, abs(h_true-hp),label="Prediction_error")
+            plt.xscale('log')
+            plt.xlabel('$s$',fontsize=22)
+            plt.ylabel('$h$',fontsize=22)
+            plt.xticks(fontsize= 14)
+            plt.yticks(fontsize= 14)
+
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+        #plt.plot(np.abs((h_true-hp)))
+        #plt.plot(np.exp(h_true-hp)/np.exp(h_true))
+        #plt.show()
+    
+    #print(error)
+    #print(Prediction_InRange)
+    return error,hp,h_true,Prediction_InRange
+
+
+
+
 xtrain, sd, Zd, meanZd = readTrainData()
 param = np.loadtxt("TrainData/hyper.dat")[1:-2]
 
@@ -170,7 +220,7 @@ if __name__ == "__main__":
     #print("xp =", 50*xp[0:2], xp[2:])
     # ~ xp = xtrain[2]
     hp, dhp = predict(xp, sd, xtrain, Zd, param)
-    plotPredTrain(hp, dhp, sd, xp, meanZd,True)
+    plotPredTrain(hp, dhp, sd, xp, meanZd,False,True)
     
     #lp = LineProfiler()
     #lp_wrapper = lp(plotPredTrain2)
