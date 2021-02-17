@@ -199,11 +199,8 @@ def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     #print(Prediction_InRange)
     return error,hp,h_true,Prediction_InRange
 
-
-
-
-xtrain, sd, Zd, meanZd = readTrainData()
-param = np.loadtxt("TrainData/hyper.dat")[1:-2]
+#xtrain, sd, Zd, meanZd = readTrainData()
+#param = np.loadtxt("TrainData/hyper.dat")[1:-2]
 
 ### MAIN ROUTINES ###
 if __name__ == "__main__":
