@@ -15,6 +15,14 @@ from matplotlib.offsetbox import AnchoredText
 import os
 import sys
 
+
+
+# The following command force matplotlib to use asmath package. Needed to plot the label ax[1] label defined below in the code.
+import matplotlib as mpl
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' #for \text command
+
+
 # plotting setup; can comment all these lines out
 #import seaborn as sns
 #plt.style.use(['seaborn-ticks', 'myjournalFONT'])

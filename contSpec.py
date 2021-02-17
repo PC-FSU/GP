@@ -16,6 +16,7 @@ from scipy.optimize import nnls, minimize, least_squares
 import time
 import os
 
+
 # COMMON FUNCTIONS DIRECT IMPORT
 
 def readInput(fname='inp.dat'):
