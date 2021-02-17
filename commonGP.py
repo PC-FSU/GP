@@ -30,15 +30,23 @@ mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' #for \text command
 
 ### I/O routines
 
-def readTrainData():
+def readTrainData(Path=None):
     """"
         Read Training Data from File; 
         normalize MWs so that they are of order 1
+        Path: To assist the Files in Figure folder. If scripts is called from Figure folder they need to pass a path to where to look for files.
     """
     
-    # read data files
-    xtrain = np.loadtxt(os.path.join("TrainData","xtrain.dat"))
-
+    #read data files
+    #print(os.path.join("TrainData","xtrain.dat"))
+    #sys.exit()
+    if Path:
+        Path = os.path.join(Path,"TrainData")
+    else:
+        Path = "TrainData"
+        
+    xtrain = np.loadtxt(os.path.join(Path,"xtrain.dat"))
+        
     # divide MWs
     Zmax   = xtrain[:,0:2].max()
     xtrain[:, 0:2] = xtrain[:, 0:2]/Zmax
@@ -46,7 +54,7 @@ def readTrainData():
     n      = len(xtrain)
     
     # sd grid is a constant
-    sd, hd = np.loadtxt(os.path.join("TrainData","h0.dat"), unpack=True)
+    sd, hd = np.loadtxt(os.path.join(Path,"h0.dat"), unpack=True)
     N      = len(sd)
 
     # initialize data vector
@@ -55,7 +63,7 @@ def readTrainData():
     
     # read rest of data
     for i in range(1, n):
-        sd, hd = np.loadtxt(os.path.join("TrainData","h{}.dat".format(i)), unpack=True)
+        sd, hd = np.loadtxt(os.path.join(Path,"h{}.dat".format(i)), unpack=True)
         Zd[i*N:(i+1)*N] = hd            
 
     # making it mean zero    
