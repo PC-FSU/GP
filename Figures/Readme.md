@@ -11,5 +11,5 @@
 | Added Figure-6, (Param_Vs_n visualization)      |
 | Added Figure-7, (Time_Vs_n visualization)      |
 | Added Figure-8, (RMSE&MAD visualization)      |
-
+| Added Figure-9, (Dalpha)      |
 Note:- When you run the routine, the pop-up figure might seems not plotted properly, but first check the saved PDF copy, which will be clean. It might be because of adjustment made by matplotlib to fit the pop-up window.
