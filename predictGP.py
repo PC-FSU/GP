@@ -115,6 +115,8 @@ def Gt(s, hs, dhp):
     return t, Gt,dphi
 
 
+
+    
 def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     #
     # getPhiFromH: if true, the test error will also run for phi vs T
@@ -198,6 +200,11 @@ def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     #print(error)
     #print(Prediction_InRange)
     return error,hp,h_true,Prediction_InRange
+
+
+
+
+
 
 #xtrain, sd, Zd, meanZd = readTrainData()
 #param = np.loadtxt("TrainData/hyper.dat")[1:-2]

@@ -14,14 +14,16 @@ mpl.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}' #for \text command
 
 if __name__ == "__main__":
     
-    x = np.array([815, 3199,6410,1.248000000000000000e+04])
+    #To plot observe time
+    n = np.array([815, 3199,6410,1.248000000000000000e+04])
     #a=np.array([37,36.100000,31,30.28,27])
-    b=np.array([12,298,1808,2.556469500765800476e+05])
-    plt.loglog(x,b, linestyle = 'None',marker='o',label="True")
+    time = np.array([12,298,1808,2.556469500765800476e+05])
+    plt.loglog(n,time, linestyle = 'None',marker='o',label="True")
 
-    temp = ((x[1:]/x[0])**3)*b[0]
-    temp = np.insert(temp,0,b[0])
-    plt.loglog(x,temp,label =r"$O(n^3)$")
+    #To plot o(n3)
+    temp = ((n[1:]/n[0])**3)*time[0]
+    temp = np.insert(temp,0,time[0])
+    plt.loglog(n,temp,label =r"$O(n^3)$")
 
 
     plt.xlabel(r"$n$")

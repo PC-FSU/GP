@@ -31,7 +31,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..\\..'))
 if __name__ == "__main__":
     # ************Parse arguments********************
     parser = argparse.ArgumentParser(description="Plot param for different n")
-    parser.add_argument("--Folder_list", type=int, nargs='+', default=[50, 100, 200, 400],
+    parser.add_argument("--Folder_list", type=int, nargs='+', default=[50, 100, 200, 400, 800, 1600, 3200],
                    help = "List of folder for which you want to plot hyper-params")
     
     argspar = parser.parse_args()
