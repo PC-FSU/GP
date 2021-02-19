@@ -1,20 +1,19 @@
-#
-# This python script plot the RMSE and Median Absolute deviation between mean prediction and actual result.
+# This python script plot the Dalpha for Phi and H.
 #
 # This script takes in following argument:
 # 1. Folder_list: List of train data folder used for running, for example, if you want to consider n = 50,100
 #                 200 and 400 you need to pass Folder_list argument as ( --Folder_list 50 100 200 400).
 #
-# 2. isSave    :  If true the result of RMSE and MAD analysis will be overwritten in the exisiting .txt file. 
+# 2. isSave    :  If true the result of Dalpha analysis will be overwritten in the exisiting .txt file. 
 #
 # To run the script: Normal example:-
-#         python plotRMSE.py --Folder_list 50 100 200 --isSave True/False
+#         python plotDalpha.py --Folder_list 50 100 200 --isSave True/False
 # 
 # To reproduce the result:
-#         python plotRMSE.py          #Default Folder_list is set to n = [50,,,,3200] (reported in paper)
+#         python plotDalpha.py        #Default Folder_list is set to n = [100,800,3200] (reported in paper)
 #                                     #This will only plot the result from the existing .txt file
 #                                     #Read instruction in __main__ section.
-#
+
 #  Note: All the loading and cleaning of workspace is automated in this script.
 #
 
@@ -57,7 +56,7 @@ def move_file(Parent_dir):
     dest = shutil.copy(source, destination) 
     return None
 
-# Utility function 3
+# Utility function 2
 def del_file():
     try:
         os.remove("relax.dat")
