@@ -80,6 +80,8 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     Zmax = 50.0
     t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
     np.savetxt(r"relax.dat", np.c_[t, phi])
+    while not os.path.exists(r"relax.dat"):
+        time.sleep(1)
     par  = spec.readInput(r"inpReSpect.dat")    
     H, _ = spec.getContSpec(par)
     h_true = np.exp(H)
