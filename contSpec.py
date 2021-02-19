@@ -664,7 +664,7 @@ def getContSpec(par):
 		np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
 	else:
 		K   = kernel_prestore(H, kernMat);
-		np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e')
+		np.savetxt(r"h.dat", np.c_[s, np.exp(H)], fmt='%e')
 
 
 	if par['verbose']:

@@ -41,6 +41,7 @@ import seaborn as sns
 import pandas as pd
 from predictGP import *
 from scipy.stats import median_abs_deviation
+from scipy.special import erf,erfinv
 import shutil
 
 
@@ -79,8 +80,11 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
     Zmax = 50.0
     t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
+    
     np.savetxt(r"relax.dat", np.c_[t, phi])
-    par  = spec.readInput(r"inpReSpect.dat")    
+    while not os.path.exists(r"relax.dat"):
+        time.sleep(1)
+    par  = spec.readInput('inpReSpect.dat')
     H, _ = spec.getContSpec(par)
     h_true = np.exp(H)
     
@@ -127,64 +131,81 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     
     #Choose what to return
     if getPhifromH:
-        return hp,h_true,phi_predicted,phi_true
+        return h_true-hp, dhp, phi_true-phi_predicted, dphi_predicted
     else:
-        return hp,h_true,None,None
+        return h_true-hp, dhp, None, None
 
 # Ploting routine, make change here to edit the figure appearance
     
 def Plot():
-
+    
+    #Hardcoding n here, and using the actual value not the folder name since they are going to use in plot labels
+    n = [53,402,1606]
     #Load data
-    RMSE_h = np.loadtxt("RMSE_h.txt")
-    RMSE_phi = np.loadtxt("RMSE_phi.txt")
-
-    MAD_h = np.loadtxt("MAD_h.txt")
-    MAD_phi = np.loadtxt("MAD_phi.txt")
-
-    ################# Plotting routine for median and mean absoulute deviation ###################
-    fig, axs = plt.subplots(1,2, figsize=(14, 7), facecolor='w', edgecolor='k')
-    axs = axs.ravel()
-    #Hardcoding labels for n, change if you ran on few dataset
-    n = [30,53,102,202,402,815,1606]
+    #Load Eta for H
+    Eta_h = np.loadtxt("Eta_h.txt")
+    #Load Eta for Phi
+    Eta_phi = np.loadtxt("Eta_phi.txt")
     
-    df1 = pd.DataFrame(MAD_h.T,columns=n).assign(Data=r"$\Phi$")
-    df2 = pd.DataFrame(MAD_phi.T,columns=n).assign(Data=r"$h$")
-    df3 = pd.DataFrame(RMSE_h.T,columns=n).assign(Data=r"$\Phi$")
-    df4 = pd.DataFrame(RMSE_phi.T,columns=n).assign(Data=r"$h$")
+    #Define Alpha
+    alpha = np.linspace(0.01,0.99,50)
+    Eta_alpha  = np.sqrt(2)*erfinv(2*alpha-1)
     
-    cdf = pd.concat([df1, df2])    
-    mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
-    #print(mdf)
-    sns.boxplot(x="Letter", y="value", hue="Data", data=mdf, ax=axs[0])
-    axs[0].set_xlabel(r'$n$')
-    axs[0].set_ylabel('MAD')
-    axs[0].set_yscale('log')
-   
-    cdf = pd.concat([df3, df4])    
-    mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
-    #print(mdf)
-    sns.boxplot(x="Letter", y="value", hue="Data", data=mdf, ax=axs[1])    
-    axs[1].set_xlabel(r'$n$')
-    axs[1].set_ylabel("RMSE")
-    axs[1].set_yscale('log')
-
+    #Placeholder for DAlpha
+    Dalpha  = np.zeros(shape=(2,len(n),len(alpha))) 
+    #Shape => (#2 for H,phi; #n for train_set; #alpha we are checking)
+    
+    #Loop over different n,i.e Training dataset
+    for i in range(len(n)):   
+        #Loop over different alpha value
+        plt.hist(Eta_h[i])
+        plt.show()
+        plt.hist(Eta_phi[i])
+        plt.show()
         
-    plt.savefig("TestAnalysis.pdf",bbox_inches='tight', pad_inches=0.25)
-    plt.show()
+        for index,element in enumerate(alpha):
+            # For h
+            Dalpha[0][i][index] = np.mean(Eta_h[i] <= element)
+            # For Phi
+            Dalpha[1][i][index] = np.mean(Eta_phi[i] <= element)
+            
     
+    #************plotting rouitne****************************
+    fig, axs = plt.subplots(1,2, figsize=(14, 6), facecolor='w', edgecolor='k')
+    axs = axs.ravel()
+   
+    for i in range(len(n)):
+        #For H
+        axs[0].scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
+        #For Phi
+        axs[1].scatter(alpha,Dalpha[1][i],label = r"$n = $"+" "+str(n[i]))
+        
+    #axs[0].plot(alpha[10:],alpha[10:],linestyle='--',label="")
+    axs[0].set_xlabel(r"$\alpha$")
+    axs[0].set_ylabel(r"$(D_{\alpha},h(s))$")
+    axs[0].legend()
+    
+    #axs[1].plot(alpha[10:],alpha[10:],linestyle='--',)
+    axs[1].set_xlabel(r"$\alpha$")
+    axs[1].set_ylabel(r"$(D_{\alpha},\phi(t))$")
+    axs[1].legend()
+    
+    plt.savefig("Dalpha.pdf",bbox_inches='tight', pad_inches=0.25)
+    plt.show()
 
+    return None
+    
 #Routine to run/save analysis.
     
 def run_analysis(Folder_list,isSave):
     
     Parent_dir  = "C:\\Users\\18503\\Dropbox\\RA\\Code\\RA\\PatchUp\\PatchUp\\Sachin"
     Test_data   = np.loadtxt(os.path.join(os.path.join(Parent_dir,"TestData","test.dat")))
-    #In shape argument 2 is for=>(For H, For Phi)
-    RMSE  = np.zeros(shape=(2,len(Folder_list),len(Test_data)))  #placeholder for RMSE
-    MAD   = np.zeros(shape=(2,len(Folder_list),len(Test_data))) #placeholder for Median absolute deviation
-                             
-    n = []
+    
+    #Hardcoding N here
+    N = 100
+    eta  = np.zeros(shape=(2,len(Folder_list),N*len(Test_data)))  #placeholder for etas,In shape argument 2 is for =>(For H, For Phi)
+
     move_file(Parent_dir)
     #Iterate over each training set
     for F_idx,folder in enumerate(Folder_list):
@@ -203,7 +224,6 @@ def run_analysis(Folder_list,isSave):
             
             #Load the training data and hyperparam
             xtrain, sd, Zd, meanZd = readTrainData(Parent_dir)
-            n.append(len(xtrain)) # used to plot n vs error
             param = np.loadtxt(os.path.join(Parent_dir,"TrainData","hyper.dat"))[1:-2]
 
             for index,test_point in enumerate(Test_data):
@@ -211,33 +231,27 @@ def run_analysis(Folder_list,isSave):
                      print("Routine Running for Folder,TestPoint# ",folder," ",index,"\n")
                     
                      hp, dhp = predict(test_point, sd, xtrain, Zd, param)
-                     hp,h_true,phi_predicted,phi_true = plotPredTrain2(hp, dhp, sd, \
+                     Dhp,Sigma_h,DPhi,Sigma_Phi = plotPredTrain2(hp, dhp, sd, \
                                                                        test_point ,meanZd,True,False)  
-                     #RMSE Calculation
-                     RMSE[0][F_idx][index] = np.linalg.norm(hp-h_true)/len(h_true)
-                     RMSE[1][F_idx][index] = np.linalg.norm(phi_predicted-phi_true)/len(phi_true)
-                     #MAD Calculation
-                     MAD[0][F_idx][index] = np.median(abs(hp-h_true))
-                     MAD[1][F_idx][index] = np.median(abs(phi_predicted-phi_true))
-                     
+                     #*****Eta Calculation***********
+                     #For h
+                     eta[0][F_idx][index*N:(index+1)*N] =   Dhp/Sigma_h
+                     #For Phi
+                     eta[1][F_idx][index*N:(index+1)*N] =   DPhi/Sigma_Phi
                      time.sleep(0.1)
 
     if isSave:
-        np.savetxt("RMSE_h.txt", RMSE[0])
-        np.savetxt("RMSE_phi.txt", RMSE[1])
-        np.savetxt("MAD_h.txt", MAD[0])
-        np.savetxt("MAD_phi.txt", MAD[1])
-    
+        np.savetxt("Eta_h.txt", eta[0])
+        np.savetxt("Eta_phi.txt", eta[1])
     del_file()    
     return None
-
 
 
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser(description="Plot RMSE and MAD")
                      
-    parser.add_argument("--Folder_list", type=int, nargs='+', default=[50, 100, 200, 400, 800,1600,3200],
+    parser.add_argument("--Folder_list", type=int, nargs='+', default=[100,800,3200],
                help = "List of training folder")
     parser.add_argument("--isSave", type=bool,default=False,
            help = "If true, save the analysis result in .txt files")
