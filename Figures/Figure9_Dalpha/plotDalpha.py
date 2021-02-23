@@ -162,7 +162,7 @@ def Plot():
         plt.hist(Eta_phi[i])
         plt.show()
         
-        for index,element in enumerate(alpha):
+        for index,element in enumerate(Eta_alpha):
             # For h
             Dalpha[0][i][index] = np.mean(Eta_h[i] <= element)
             # For Phi
