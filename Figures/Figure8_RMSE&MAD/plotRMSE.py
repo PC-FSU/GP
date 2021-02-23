@@ -1,22 +1,26 @@
-#
 # This python script plot the RMSE and Median Absolute deviation between mean prediction and actual result.
 #
 # This script takes in following argument:
-# 1. Folder_list: List of train data folder used for running, for example, if you want to consider n = 50,100
-#                 200 and 400 you need to pass Folder_list argument as ( --Folder_list 50 100 200 400).
+# 1. Folder_list   : List of train data folder used for running, for example, if you want to consider n = 
+#                 50,100 200 and 400 you need to pass Folder_list argument as ( --Folder_list 50 100 200 400).
 #
-# 2. isSave    :  If true the result of RMSE and MAD analysis will be overwritten in the exisiting .txt file. 
+# 2. RunAnalysis  : If true, The RMSE and MAD will be caluclated for passed Folder_list argument and 
+#                    result  will be plotted. If False, the result will be plotted from the exisitng 
+#                    .txt  files (Note: This result will be plotted for the Folder_list argument used to
+#                    create the saved .txt file, not the current Folder_list argument. Note this 
+#                    command doesn't save the result, to save the result check out the isSave flag.
+#
+# 3. isSave       : If true the result of RMSE and MAD analysis will be overwritten in the exisiting
+#                   .txt file, and the plot will be saved.
 #
 # To run the script: Normal example:-
-#         python plotRMSE.py --Folder_list 50 100 200 --isSave True/False
+#         python plotRMSE.py --Folder_list 50 100 200 --isSave True/False --RunAnalysis True/False
 # 
 # To reproduce the result:
-#         python plotRMSE.py          #Default Folder_list is set to n = [50,,,,3200] (reported in paper)
-#                                     #This will only plot the result from the existing .txt file
-#                                     #Read instruction in __main__ section.
-#
-#  Note: All the loading and cleaning of workspace is automated in this script.
-#
+#         python plotRMSE.py                            
+#         (Default Folder_list is set to n = [50,100,200,400,1600,3200] (reported in paper)                    #         This will only plot the result (Not save) from the existing .txt file)
+# Note: All the loading and cleaning of workspace is automated in this script.
+
 
 import matplotlib.pyplot as plt
 plt.style.use(['seaborn-white', 'myjournal'])
@@ -135,25 +139,37 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
 
 # Ploting routine, make change here to edit the figure appearance
     
-def Plot():
+def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePlot=False):
+    
+    """
+    RMSE_h    = Root Mean Squared Error for h(s).
+    RMSE_Phi  = Root Mean Squared Error for Phi(t).
+    Mad_h     = Medain Absolute deviation for h(s).
+    Mad_Phi   = Medain Absolute deviation for Phi(st).
+    From_txt  = If true load value of above 4 argument from existing .txt file.
+    SavePlot  = If true, save the figure.
+    
+    """
+    
+    
+    if From_txt == True:
+        #Load data
+        RMSE_h = np.loadtxt("RMSE_h.txt")
+        RMSE_phi = np.loadtxt("RMSE_phi.txt")
 
-    #Load data
-    RMSE_h = np.loadtxt("RMSE_h.txt")
-    RMSE_phi = np.loadtxt("RMSE_phi.txt")
-
-    MAD_h = np.loadtxt("MAD_h.txt")
-    MAD_phi = np.loadtxt("MAD_phi.txt")
+        MAD_h = np.loadtxt("MAD_h.txt")
+        MAD_phi = np.loadtxt("MAD_phi.txt")
 
     ################# Plotting routine for median and mean absoulute deviation ###################
     fig, axs = plt.subplots(1,2, figsize=(14, 7), facecolor='w', edgecolor='k')
     axs = axs.ravel()
-    #Hardcoding labels for n, change if you ran on few dataset
-    n = [30,53,102,202,402,815,1606]
+    #read labels for n, to plot
+    n = RMSE_h[:,0]  #The first column of all .txt file contain n
     
-    df1 = pd.DataFrame(MAD_h.T,columns=n).assign(Data=r"$\Phi$")
-    df2 = pd.DataFrame(MAD_phi.T,columns=n).assign(Data=r"$h$")
-    df3 = pd.DataFrame(RMSE_h.T,columns=n).assign(Data=r"$\Phi$")
-    df4 = pd.DataFrame(RMSE_phi.T,columns=n).assign(Data=r"$h$")
+    df1 = pd.DataFrame(MAD_h[:,1:].T,columns=n).assign(Data=r"$\Phi$")  #Skip first column
+    df2 = pd.DataFrame(MAD_phi[:,1:].T,columns=n).assign(Data=r"$h$")
+    df3 = pd.DataFrame(RMSE_h[:,1:].T,columns=n).assign(Data=r"$\Phi$")
+    df4 = pd.DataFrame(RMSE_phi[:,1:].T,columns=n).assign(Data=r"$h$")
     
     cdf = pd.concat([df1, df2])    
     mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
@@ -162,7 +178,7 @@ def Plot():
     axs[0].set_xlabel(r'$n$')
     axs[0].set_ylabel('MAD')
     axs[0].set_yscale('log')
-   
+    
     cdf = pd.concat([df3, df4])    
     mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
     #print(mdf)
@@ -171,14 +187,18 @@ def Plot():
     axs[1].set_ylabel("RMSE")
     axs[1].set_yscale('log')
 
-        
-    plt.savefig("TestAnalysis.pdf",bbox_inches='tight', pad_inches=0.25)
+    if SavePlot == True:
+        plt.savefig("TestAnalysis.pdf",bbox_inches='tight', pad_inches=0.25)
     plt.show()
     
-
 #Routine to run/save analysis.
     
-def run_analysis(Folder_list,isSave):
+def run_analysis(Folder_list , isSave):
+    """
+    Folder_list = List of training folder, i.e n
+    isSave      = If true, save the analysis result in .txt files, and save the plot.
+    
+    """
     
     Parent_dir  = "C:\\Users\\18503\\Dropbox\\RA\\Code\\RA\\PatchUp\\PatchUp\\Sachin"
     Test_data   = np.loadtxt(os.path.join(os.path.join(Parent_dir,"TestData","test.dat")))
@@ -211,7 +231,7 @@ def run_analysis(Folder_list,isSave):
             for index,test_point in enumerate(Test_data):
                 
                      print("Routine Running for Folder,TestPoint# ",folder," ",index,"\n")
-                    
+                     #print(test_point,"\n")
                      hp, dhp = predict(test_point, sd, xtrain, Zd, param)
                      hp,h_true,phi_predicted,phi_true = plotPredTrain2(hp, dhp, sd, \
                                                                        test_point ,meanZd,True,False)  
@@ -224,15 +244,23 @@ def run_analysis(Folder_list,isSave):
                      
                      time.sleep(0.1)
 
-    if isSave:
-        np.savetxt("RMSE_h.txt", RMSE[0])
-        np.savetxt("RMSE_phi.txt", RMSE[1])
-        np.savetxt("MAD_h.txt", MAD[0])
-        np.savetxt("MAD_phi.txt", MAD[1])
     
-    del_file()    
-    return None
+    RMSE_h    =   np.c_[np.array(n).T,RMSE[0]]
+    RMSE_phi  =   np.c_[np.array(n).T,RMSE[1]]
+    MAD_h     =   np.c_[np.array(n).T,MAD[0]]
+    MAD_phi   =   np.c_[np.array(n).T,MAD[1]]
+    del_file()   
+    
+    if isSave == True:
+        #Save n, and analysis result    
+        np.savetxt("RMSE_h.txt",   RMSE_h)  
+        np.savetxt("RMSE_phi.txt", RMSE_phi)
+        np.savetxt("MAD_h.txt",  MAD_h)
+        np.savetxt("MAD_phi.txt", MAD_phi)
+        
+    return RMSE_h,RMSE_phi,MAD_h,MAD_phi
 
+    
 
 
 if __name__ == "__main__":
@@ -240,9 +268,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot RMSE and MAD")
                      
     parser.add_argument("--Folder_list", type=int, nargs='+', default=[50, 100, 200, 400, 800,1600,3200],
-               help = "List of training folder")
+               help = "List of training folder, i.e n")
     parser.add_argument("--isSave", type=bool,default=False,
-           help = "If true, save the analysis result in .txt files")
+           help = "If true, save the analysis result in .txt files, and save the plot")
+    parser.add_argument("--RunAnalysis", type=bool, default=False,
+           help = "If true, The RMSE and MAD will be caluclated for passed Folder_list argument and result will be plotted. If False, the result will be plotted from the exisitng .txt files (Note: This result will be plotted for the Folder_list argument used to create the saved .txt file, not the current Folder_list argument.")
     
     argspar = parser.parse_args()
     for p, v in zip(argspar.__dict__.keys(), argspar.__dict__.values()):
@@ -251,8 +281,10 @@ if __name__ == "__main__":
     
     Folder_list = argspar.Folder_list
     isSave      = argspar.isSave
+    RunAnalysis = argspar.RunAnalysis
     
-    #Uncomment line below if you want to run the analysis
-    #run_analysis(Folder_list,isSave)
-    Plot()
-    
+    if RunAnalysis == True:
+        RMSE_h,RMSE_phi,MAD_h,MAD_phi = run_analysis(Folder_list,isSave)
+        Plot(RMSE_h,RMSE_phi,MAD_h,MAD_phi,From_txt=False,SavePlot = isSave)
+    else:
+        Plot(From_txt = True, SavePlot = isSave)

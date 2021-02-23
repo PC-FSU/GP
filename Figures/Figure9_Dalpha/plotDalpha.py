@@ -64,7 +64,7 @@ def del_file():
         os.remove("inpReSpect.dat")
         os.rmdir("output")
     except:
-        print("Directory doesn't have .dat file")
+        print("")
     
     return None
 
@@ -136,16 +136,35 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
 
 # Ploting routine, make change here to edit the figure appearance
     
-def Plot():
+def Plot(Eta_h = None,Eta_phi = None, From_txt=False,SavePlot=False):
+
+        
+    """
+    ETA_h    = Eta_alpha result for h.  Note: Eta should be Xi greek symbol, but to avoid confusion i used eta
+    ETA_Phi  = Eta_alpha result for Phi.
+    From_txt = If true load value of above 4 argument from existing .txt file.
+    SavePlot = If true, save the figure.
     
-    #Hardcoding n here, and using the actual value not the folder name since they are going to use in plot labels
-    n = [53,402,1606]
-    #Load data
-    #Load Eta for H
-    Eta_h = np.loadtxt("Eta_h.txt")
-    #Load Eta for Phi
-    Eta_phi = np.loadtxt("Eta_phi.txt")
+    """
     
+    if From_txt == True:
+        #Load data
+        #Load Eta for H
+        Eta_h = np.loadtxt("Eta_h.txt")
+        #Load Eta for Phi
+        Eta_phi = np.loadtxt("Eta_phi.txt")
+        print(Eta_h.shape,Eta_phi.shape) 
+        
+    try:
+        n = Eta_h[:,0]  #The first column of all .txt file contain n
+        Eta_h = Eta_h[:,1:]
+        Eta_phi = Eta_phi[:,1:]
+    except:
+        n = np.array([Eta_h[0]])
+        Eta_h = Eta_h[1:].reshape(1,-1)
+        Eta_phi = Eta_phi[1:].reshape(1,-1)     
+        print(Eta_h.shape,Eta_phi.shape) 
+        
     #Define Alpha
     alpha = np.linspace(0.01,0.99,50)
     Eta_alpha  = np.sqrt(2)*erfinv(2*alpha-1)
@@ -153,15 +172,10 @@ def Plot():
     #Placeholder for DAlpha
     Dalpha  = np.zeros(shape=(2,len(n),len(alpha))) 
     #Shape => (#2 for H,phi; #n for train_set; #alpha we are checking)
-    
+    print(Dalpha.shape)
     #Loop over different n,i.e Training dataset
     for i in range(len(n)):   
         #Loop over different alpha value
-        plt.hist(Eta_h[i])
-        plt.show()
-        plt.hist(Eta_phi[i])
-        plt.show()
-        
         for index,element in enumerate(Eta_alpha):
             # For h
             Dalpha[0][i][index] = np.mean(Eta_h[i] <= element)
@@ -172,24 +186,25 @@ def Plot():
     #************plotting rouitne****************************
     fig, axs = plt.subplots(1,2, figsize=(14, 6), facecolor='w', edgecolor='k')
     axs = axs.ravel()
-   
+    
     for i in range(len(n)):
         #For H
         axs[0].scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
         #For Phi
         axs[1].scatter(alpha,Dalpha[1][i],label = r"$n = $"+" "+str(n[i]))
         
-    #axs[0].plot(alpha[10:],alpha[10:],linestyle='--',label="")
+    axs[0].plot(alpha,alpha,linestyle='--',color = 'k')
     axs[0].set_xlabel(r"$\alpha$")
     axs[0].set_ylabel(r"$(D_{\alpha},h(s))$")
     axs[0].legend()
     
-    #axs[1].plot(alpha[10:],alpha[10:],linestyle='--',)
+    axs[1].plot(alpha,alpha,linestyle='--',color = 'k')
     axs[1].set_xlabel(r"$\alpha$")
     axs[1].set_ylabel(r"$(D_{\alpha},\phi(t))$")
     axs[1].legend()
     
-    plt.savefig("Dalpha.pdf",bbox_inches='tight', pad_inches=0.25)
+    if SavePlot == True:
+        plt.savefig("Dalpha.pdf",bbox_inches='tight', pad_inches=0.25)
     plt.show()
 
     return None
@@ -206,6 +221,7 @@ def run_analysis(Folder_list,isSave):
     eta  = np.zeros(shape=(2,len(Folder_list),N*len(Test_data)))  #placeholder for etas,In shape argument 2 is for =>(For H, For Phi)
 
     move_file(Parent_dir)
+    n = []
     #Iterate over each training set
     for F_idx,folder in enumerate(Folder_list):
             #Clean Workspace
@@ -223,6 +239,7 @@ def run_analysis(Folder_list,isSave):
             
             #Load the training data and hyperparam
             xtrain, sd, Zd, meanZd = readTrainData(Parent_dir)
+            n.append(len(xtrain)) # used to plot n vs error
             param = np.loadtxt(os.path.join(Parent_dir,"TrainData","hyper.dat"))[1:-2]
 
             for index,test_point in enumerate(Test_data):
@@ -238,22 +255,32 @@ def run_analysis(Folder_list,isSave):
                      #For Phi
                      eta[1][F_idx][index*N:(index+1)*N] =   DPhi/Sigma_Phi
                      time.sleep(0.1)
-
-    if isSave:
-        np.savetxt("Eta_h.txt", eta[0])
-        np.savetxt("Eta_phi.txt", eta[1])
-    del_file()    
-    return None
+    
+    
+    Eta_h    =   np.c_[np.array(n).T, eta[0].reshape(len(Folder_list),N*len(Test_data))]
+    Eta_phi  =   np.c_[np.array(n).T, eta[1].reshape(len(Folder_list),N*len(Test_data))]
+    del_file() 
+    
+    if isSave == True:
+        np.savetxt("Eta_h.txt",   Eta_h)
+        np.savetxt("Eta_phi.txt", Eta_phi)
+        
+    return Eta_h,Eta_phi
 
 
 if __name__ == "__main__":
     # Parse arguments
-    parser = argparse.ArgumentParser(description="Plot RMSE and MAD")
+    parser = argparse.ArgumentParser(description="Plot Dalpha vs alpha, for different n")
                      
     parser.add_argument("--Folder_list", type=int, nargs='+', default=[100,800,3200],
                help = "List of training folder")
+    
     parser.add_argument("--isSave", type=bool,default=False,
-           help = "If true, save the analysis result in .txt files")
+           help = "If true, save the analysis result in .txt files, and save the plot")
+    
+    parser.add_argument("--RunAnalysis", type=bool, default=False,
+           help = "If true, The Dalpha vs Alpha will be caluclated for passed Folder_list argument and result will be plotted. If False, the result will be plotted from the exisitng .txt files (Note: This result will be plotted for the Folder_list argument used to create the saved .txt file, not the current Folder_list argument.")
+    
     
     argspar = parser.parse_args()
     for p, v in zip(argspar.__dict__.keys(), argspar.__dict__.values()):
@@ -262,8 +289,10 @@ if __name__ == "__main__":
     
     Folder_list = argspar.Folder_list
     isSave      = argspar.isSave
-    
-    #Uncomment line below if you want to run the analysis
-    #run_analysis(Folder_list,isSave)
-    Plot()
-    
+    RunAnalysis = argspar.RunAnalysis
+
+    if RunAnalysis == True:
+        Eta_h,Eta_phi = run_analysis(Folder_list,isSave)
+        Plot(Eta_h,Eta_phi,From_txt=False,SavePlot = isSave)
+    else:
+        Plot(From_txt = True, SavePlot = isSave)
