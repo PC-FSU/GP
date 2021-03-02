@@ -100,38 +100,24 @@ Following are the scripts :
 -->genTest.py  => Routine to generate test datasets (New script)
 
   This Script Generate Test Data, I am gonna include Xtest data in Zip file so in general you don't have to run this script. 
-   
+      
   This script takes argument:
-     ## Flags to set value for data generation routine.
     1. Sample_Size : Number of sample tha you want to draw from hypercubic sampling for test data
           Note: The generated Sample are then subjected to constrained offer by our problem, like M1>M2,
                 This lead to elimination of half of the genearted sample, so in reality we actual size is 
                 ~Sample_Size/2.
-    2. Param_Value: "value for (Z_min,Z_max,pdmin,pdmax), fixed for our case, but in case if we want to update it."
-    3. Seed:  seed use to generate hypercubic samples
-    
-     ##Flags for visualization purpose
-    4. isPlot: Flag to plot the drawn hypercubic test sample.
-    5. isPlot_predictions: 'Flag to visualize prediction on random test data, Note:- The data genertaed by this flag is not going be saved, only prediction is going to be plotted.'
-    6. Check_prediction: If true prediction will be done on a single training samples, This is just a 
-                         extra utilities, can be removed.
+    2. Param_Value: "value for (Z_min,Z_max,pdmin,pdmax), fixed for our case, but in case."
 
-      ##Flags to generate the test data for performing error analysis with different xtrain size,n.
-    7. nreplica: Number of Copy of xtest data of size Sample_Size, you need to generate
-                 Note: when nreplica == 0, a passed seed or seed=0 is selected and kept same for other 
-                       nreplica - 1. 
-
-    8. Gen_Data: If True, This will generate (nreplica) copy of different xtest data (of size 
-                        Sample_Size) for running test_error_analysis.py and save it in TestData Folder").
-                The data will be saved in TestData Folder, with filename xtest_0.dat...to...
-                xtest_neplica.dat. Note: if Gen_data is True and there are existing file in TestData folder, 
-                it will delete all the exisiting data and then rewrites the data.
+    3. nreplica: Number of Copy of xtest data of size Sample_Size, you need to generate.
                 
+    4. isSave:  "If True, Save the data, and remove the existing .data files"
+
+    5. isPlot:  "IF true, plot the drawn samples"
+
+
   How to run:
-     To create data only for Visualizing prediction
-     => python genTest.py --Sample_Size 100 --isPlot_predictions True
-     To create data and save it for future analysis
-     => python genTest.py --Sample_Size 100 --Gen_Data True --nreplica 5
+            python genTest.py --Sample_Size 50 --isPlot True/False --isSave True/False --nreplica int_N
+    
    
    
 -->genTrain.py => Routine to generate train DataSets ( Major change from old version )
