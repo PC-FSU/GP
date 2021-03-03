@@ -82,10 +82,15 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     hp = hp + meanZ
     # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
     Zmax = 50.0
-    t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
-    np.savetxt(r"relax.dat", np.c_[t, phi])
-    while not os.path.exists(r"relax.dat"):
-        time.sleep(1)
+    t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)\
+    
+    try:
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+    except:
+        while not os.path.exists(r"relax.dat"):
+            time.sleep(1)
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+        
     par  = spec.readInput(r"inpReSpect.dat")    
     H, _ = spec.getContSpec(par)
     h_true = np.exp(H)
@@ -166,12 +171,14 @@ def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePl
     #read labels for n, to plot
     n = RMSE_h[:,0]  #The first column of all .txt file contain n
     
-    df1 = pd.DataFrame(MAD_h[:,1:].T,columns=n).assign(Data=r"$\Phi$")  #Skip first column
-    df2 = pd.DataFrame(MAD_phi[:,1:].T,columns=n).assign(Data=r"$h$")
-    df3 = pd.DataFrame(RMSE_h[:,1:].T,columns=n).assign(Data=r"$\Phi$")
-    df4 = pd.DataFrame(RMSE_phi[:,1:].T,columns=n).assign(Data=r"$h$")
+    df1 = pd.DataFrame(MAD_h[:,1:].T,columns=n).assign(Data=r"$h$")  #Skip first column
+    df2 = pd.DataFrame(MAD_phi[:,1:].T,columns=n).assign(Data=r"$\Phi$")
+    df3 = pd.DataFrame(RMSE_h[:,1:].T,columns=n).assign(Data=r"$h$")
+    df4 = pd.DataFrame(RMSE_phi[:,1:].T,columns=n).assign(Data=r"$\Phi$")
     
-    cdf = pd.concat([df1, df2])    
+    
+    #cdf = pd.concat([df1, df2])
+    cdf = df1                               #Plot only h, if you want to plot h & phi uncomment above line
     mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
     #print(mdf)
     sns.boxplot(x="Letter", y="value", hue="Data", data=mdf, ax=axs[0])
@@ -179,7 +186,8 @@ def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePl
     axs[0].set_ylabel('MAD')
     axs[0].set_yscale('log')
     
-    cdf = pd.concat([df3, df4])    
+    #cdf = pd.concat([df3, df4])  
+    cdf = df3                                #Plot only h, if you want to plot h & phi uncomment above line
     mdf = pd.melt(cdf, id_vars=['Data'], var_name=['Letter'])
     #print(mdf)
     sns.boxplot(x="Letter", y="value", hue="Data", data=mdf, ax=axs[1])    
@@ -197,7 +205,6 @@ def run_analysis(Folder_list , isSave):
     """
     Folder_list = List of training folder, i.e n
     isSave      = If true, save the analysis result in .txt files, and save the plot.
-    
     """
     
     Parent_dir  = "C:\\Users\\18503\\Dropbox\\RA\\Code\\RA\\PatchUp\\PatchUp\\Sachin"
@@ -238,10 +245,11 @@ def run_analysis(Folder_list , isSave):
                      #RMSE Calculation
                      RMSE[0][F_idx][index] = np.linalg.norm(hp-h_true)/len(h_true)
                      RMSE[1][F_idx][index] = np.linalg.norm(phi_predicted-phi_true)/len(phi_true)
+                    
                      #MAD Calculation
                      MAD[0][F_idx][index] = np.median(abs(hp-h_true))
                      MAD[1][F_idx][index] = np.median(abs(phi_predicted-phi_true))
-                     
+                        
                      time.sleep(0.1)
 
     
@@ -272,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument("--isSave", type=bool,default=False,
            help = "If true, save the analysis result in .txt files, and save the plot")
     parser.add_argument("--RunAnalysis", type=bool, default=False,
-           help = "If true, The RMSE and MAD will be caluclated for passed Folder_list argument and result will be plotted. If False, the result will be plotted from the exisitng .txt files (Note: This result will be plotted for the Folder_list argument used to create the saved .txt file, not the current Folder_list argument.")
+           help = "If true, The RMSE and MAD will be caluclated for passed Folder_list argument and result will be plotted, to save pass the isave argument. If False, the result will be plotted from the exisitng .txt files (Note: This result will be plotted for the Folder_list argument used to create the saved .txt file, not the current Folder_list argument.")
     
     argspar = parser.parse_args()
     for p, v in zip(argspar.__dict__.keys(), argspar.__dict__.values()):

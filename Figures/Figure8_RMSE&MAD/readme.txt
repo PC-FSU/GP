@@ -22,23 +22,23 @@
 #
 #  Mad_h.txt ==> Contain the median absolute deviation for h(s). The shape of file => (Len(Folder_list), 1+ Len(test_data) ).
 #		 
-#		 Len(test_data) = 261 = Constant. We have 261 test data insted of 250, Because the script that I used to
+#		 Len(test_data) = 251 = Constant. We have 251 test data insted of 250, Because the script that I used to
 #		 Create sample test data subject the sample drawn under same constraint as input point (M_1>M_2,..etc). 
 #		 So i ran the script for 10 times with 10 different random seed, and with sample_size of 50. The script produce 50 
-# 	         sample, but drop nearly half because of the constraint, so at each run we have sample ~(24-27). Therefore ~(24-27)*10=261.
+# 	         sample, but drop nearly half because of the constraint, so at each run we have sample ~(24-27). Therefore ~(24-27)*10=251.
 #
 #                The First Column contain the value of n, training set on which Analysis is ran.        
-#       	 If the Folder_list argument is 50 100, the shape of Mad_h.txt will be ==> (2,1+261). 
+#       	 If the Folder_list argument is 50 100, the shape of Mad_h.txt will be ==> (2,1+251). 
 #                
 #                
-#                 The current Mad_h.txt has shape ==> (7,1+261), because the used Folder_list argument for creating Mad_h.txt is
+#                 The current Mad_h.txt has shape ==> (7,1+251), because the used Folder_list argument for creating Mad_h.txt is
 #                 [50,100,200,400,800,1600,3200] (Same as what we have in paper).
 #
 #
 #  Mad_Phi.txt ==> Contain the median absolute deviation for Phi(t). The shape of file => (Len(Folder_list), 1+ Len(test_data) ).
 #                    
 #                The First Column contain the value of n, training set on which Analysis is ran. 
-#                The current Mad_Phi.txt has shape ==> (7,1+261), because the used Folder_list argument for creating Mad_Phi.txt is
+#                The current Mad_Phi.txt has shape ==> (7,1+251), because the used Folder_list argument for creating Mad_Phi.txt is
 #                 [50,100,200,400,800,1600,3200] (Same as what we have in paper).
 #
 #
@@ -46,7 +46,7 @@
 #  RMSE_h.txt ==> Contain RMSE for h(s). The shape of file => (Len(Folder_list), 1+ Len(test_data) ).
 #
 #                 The First Column contain the value of n, training set on which Analysis is ran. 
-#                 The current RMSE_h.txt has shape ==> (7,1+261), because the used Folder_list argument for creating RMSE_h.txt is
+#                 The current RMSE_h.txt has shape ==> (7,1+251), because the used Folder_list argument for creating RMSE_h.txt is
 #                 [50,100,200,400,800,1600,3200] (Same as what we have in paper).
 #  
 #  
@@ -55,6 +55,6 @@
 #  RMSE_Phi.txt ==> Contain RMSE for Phi(t). The shape of file => (Len(Folder_list) , 1+ Len(test_data)).
 #
 #                 The First Column contain the value of n, training set on which Analysis is ran. 
-#                 The current RMSE_Phi.txt has shape ==> (7,1+261), because the used Folder_list argument for creating RMSE_Phi.txt is
+#                 The current RMSE_Phi.txt has shape ==> (7,1+251), because the used Folder_list argument for creating RMSE_Phi.txt is
 #                 [50,100,200,400,800,1600,3200] (Same as what we have in paper).
 #

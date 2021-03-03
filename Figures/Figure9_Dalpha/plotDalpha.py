@@ -79,10 +79,14 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
     Zmax = 50.0
     t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
-    
-    np.savetxt(r"relax.dat", np.c_[t, phi])
-    while not os.path.exists(r"relax.dat"):
-        time.sleep(1)
+            
+    try:
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+    except:
+        while not os.path.exists(r"relax.dat"):
+            time.sleep(1)
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+        
     par  = spec.readInput('inpReSpect.dat')
     H, _ = spec.getContSpec(par)
     h_true = np.exp(H)
@@ -184,24 +188,25 @@ def Plot(Eta_h = None,Eta_phi = None, From_txt=False,SavePlot=False):
             
     
     #************plotting rouitne****************************
-    fig, axs = plt.subplots(1,2, figsize=(14, 6), facecolor='w', edgecolor='k')
-    axs = axs.ravel()
+    fig, axs = plt.subplots(1,1, figsize=(10, 5), facecolor='w', edgecolor='k')
+    #axs = axs.ravel()
     
     for i in range(len(n)):
         #For H
-        axs[0].scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
+        #axs[0].scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
+        axs.scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
         #For Phi
-        axs[1].scatter(alpha,Dalpha[1][i],label = r"$n = $"+" "+str(n[i]))
+        #axs[1].scatter(alpha,Dalpha[1][i],label = r"$n = $"+" "+str(n[i]))
         
-    axs[0].plot(alpha,alpha,linestyle='--',color = 'k')
-    axs[0].set_xlabel(r"$\alpha$")
-    axs[0].set_ylabel(r"$(D_{\alpha},h(s))$")
-    axs[0].legend()
+    axs.plot(alpha,alpha,linestyle='--',color = 'k')
+    axs.set_xlabel(r"$\alpha$")
+    axs.set_ylabel(r"$(D_{\alpha},h(s))$")
+    axs.legend()
     
-    axs[1].plot(alpha,alpha,linestyle='--',color = 'k')
-    axs[1].set_xlabel(r"$\alpha$")
-    axs[1].set_ylabel(r"$(D_{\alpha},\phi(t))$")
-    axs[1].legend()
+    #axs[1].plot(alpha,alpha,linestyle='--',color = 'k')
+    #axs[1].set_xlabel(r"$\alpha$")
+    #axs[1].set_ylabel(r"$(D_{\alpha},\phi(t))$")
+    #axs[1].legend()
     
     if SavePlot == True:
         plt.savefig("Dalpha.pdf",bbox_inches='tight', pad_inches=0.25)

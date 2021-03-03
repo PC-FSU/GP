@@ -128,7 +128,14 @@ def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
     # run true dynamics using TDD and get spectrum: Note unnormalize the MWs
     Zmax = 50.0
     t, phi = tdd.getPhiPD(Zmax*xp[0:2], xp[2:4], xp[4], isPlot = False)
-    np.savetxt("relax.dat", np.c_[t, phi])
+    
+    try:
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+    except:
+        while not os.path.exists(r"relax.dat"):
+            time.sleep(1)
+        np.savetxt(r"relax.dat", np.c_[t, phi])
+    
     par  = spec.readInput('inpReSpect.dat')    
     H, _ = spec.getContSpec(par)
     h_true = np.exp(H)
@@ -212,6 +219,8 @@ def plotPredTrain(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
 ### MAIN ROUTINES ###
 if __name__ == "__main__":
 
+    xtrain, sd, Zd, meanZd = readTrainData()
+    param = np.loadtxt("TrainData/hyper.dat")[1:-2]
     #xp = np.array([43.0, 18, 1.15, 1.34, 0.38])
     #xp[0:2] = xp[0:2]/50.0
     
@@ -220,6 +229,8 @@ if __name__ == "__main__":
     #xp = np.array([0.46, 0.33, 1.39, 1.15, 0.62])
     xp = np.array([0.81,   0.29,   1.13,   1.39,   0.84])
     
+    xp = np.array([0.88, 0.47, 1.03, 1.32, 0.98])
+    xp = np.array([0.45, 0.12, 1.13, 1.31, 0.92])
     #xp = xtrain[0]
     #print("xp =", 50*xp[0:2], xp[2:])
     # ~ xp = xtrain[2]
