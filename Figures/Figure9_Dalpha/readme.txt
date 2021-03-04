@@ -18,30 +18,32 @@
 # To reproduce the result:
 #         python plotDalpha.py       (Default Folder_list is set to n = [100,800,3200]                                                      
 #                                                        This will only plot the result (Not save) from the existing .txt file)
-
-
+#
+# To Print the result for single case let's say n=53
+#         python plotDalpha.py --Folder_list 100   (The result will be plotted from saved .txt files)
+  
 #*****************************************************.txt file description*************************************************************
 
 Note: I am calling Xi (Greek symbol used in Dalpha notation) Eta.
 
-# Eta_h.txt ==> Contain the Eta_alpha for h(s). The shape of file => (Len(Folder_list), 1 + N*n_test).
+# Eta_h.txt ==> Contain the Eta_alpha for h(s). The shape of file => (1 + N*n_test, Len(Folder_list)).
 #		 
-#		 Len(test_data) = 261 = Constant, N (grid) = 100 = Constant. Therefore 2nd Dim = 1 + 26100 = Constant.
-#                Note: we have 261 test data insted of 250, Because the script that I used to
+#		 Len(test_data) = 251 = Constant, N (grid) = 100 = Constant. Therefore 1st Dim = 1 + 25100 = Constant.
+#                Note: we have 251 test data insted of 250, Because the script that I used to
 #		 Create sample test data subject the sample drawn under same constraint as input point (M_1>M_2,..etc). 
 #		 So i ran the script for 10 times with 10 different random seed, and with sample_size of 50. The script produce 50 
-# 	         sample, but drop nearly half because of the constraint, so at each run we have sample ~(24-27). Therefore ~(24-27)*10=261.
+# 	         sample, but drop nearly half because of the constraint, so at each run we have sample ~(24-27). Therefore ~(24-27)*10=251.
 #
-#                The First Column contain the value of n, training set on which Analysis is ran.        
-#       	 If the Folder_list argument is 50 100, the shape of Eta_h.txt will be ==> (2,1+26100). 
+#                The First Row contain the value of n, training set on which Analysis is ran.        
+#       	 If the Folder_list argument is 50 100, the shape of Eta_h.txt will be ==> (1+25100,2). 
 #                
 #                
-#                 The current Eta_h.txt has shape ==> (3,1+261), because the used Folder_list argument for creating Eta_h.txt is
-#                 [100,800,3200].
+#                 The current Eta_h.txt has shape ==> (1+25100,7), because the used Folder_list argument for creating Eta_h.txt is
+#                 [50,100,200,400,800,1600,3200].
 #
 #
-#  Eta_Phi.txt ==> Contain the Eta_alpha for Phi(t). The shape of file => (Len(Folder_list), 1 + N*n_test).
+#  Eta_Phi.txt ==> Contain the Eta_alpha for Phi(t). The shape of file => (1 + N*n_test,Len(Folder_list)).
 #                    
 #                The First Column contain the value of n, training set on which Analysis is ran. 
-#                The current Eta_Phi.txt has shape ==> (3,1+26100), because the used Folder_list argument for creating Eta_Phi.txt is
-#                 [100,800,3200]
+#                The current Eta_Phi.txt has shape ==> (1+25100,7), because the used Folder_list argument for creating Eta_Phi.txt is
+#                 [50,100,200,400,800,1600,3200].

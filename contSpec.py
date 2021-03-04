@@ -660,16 +660,16 @@ def getContSpec(par):
 
     # Save inferred G(t)
 	if par['plateau']:
-		K   = kernel_prestore(H, kernMat, G0);
+		K   = kernel_prestore(H, kernMat, G0)
 		np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e', header='G0 = {0:0.3e}'.format(G0))
 	else:
 		K   = kernel_prestore(H, kernMat)
 		try:
-			np.savetxt(r'h.dat', np.c_[s, np.exp(H)], fmt='%e')
+			np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e')
 		except:
-			while not os.path.exists(r'h.dat'):
+			while not os.path.exists('h.dat'):
 				time.sleep(1)
-			np.savetxt(r'h.dat', np.c_[s, np.exp(H)], fmt='%e')
+			np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e')
             
 #		np.savetxt('h.dat', np.c_[s, np.exp(H)], fmt='%e')
 

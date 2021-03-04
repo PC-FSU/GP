@@ -140,51 +140,84 @@ def plotPredTrain2(hp, dhp, sv, xp, meanZ, getPhifromH=False, plot=False):
 
 # Ploting routine, make change here to edit the figure appearance
     
-def Plot(Eta_h = None,Eta_phi = None, From_txt=False,SavePlot=False):
+def Plot(Eta_h = None, Eta_phi = None, From_txt=False, SavePlot=False, Folders=None):
 
-        
     """
     ETA_h    = Eta_alpha result for h.  Note: Eta should be Xi greek symbol, but to avoid confusion i used eta
     ETA_Phi  = Eta_alpha result for Phi.
     From_txt = If true load value of above 4 argument from existing .txt file.
     SavePlot = If true, save the figure.
-    
+    Folders  = Folder_list
     """
     
     if From_txt == True:
         #Load data
         #Load Eta for H
-        Eta_h = np.loadtxt("Eta_h.txt")
+        Eta_h = pd.read_csv('Eta_h.txt', sep=" ", header=None)
         #Load Eta for Phi
-        Eta_phi = np.loadtxt("Eta_phi.txt")
-        print(Eta_h.shape,Eta_phi.shape) 
+        Eta_phi = pd.read_csv('Eta_phi.txt', sep=" ", header=None)
+    else:
+        #Load Eta for H
+        Eta_h   = pd.DataFrame(Eta_h)
+        #Load Eta for Phi
+        Eta_phi = pd.DataFrame(Eta_phi)
+
+    print(Eta_phi.shape)
+    new_header = Eta_h.iloc[0]     #grab the first row for the header
+    Eta_h = Eta_h[1:]              #take the data less the header row
+    Eta_h.columns = new_header     #set the header row as the df header
+    
+    new_header = Eta_phi.iloc[0]   #grab the first row for the header
+    Eta_phi = Eta_phi[1:]          #take the data less the header row
+    Eta_phi.columns = new_header   #set the header row as the df header
         
+        #print(Eta_phi.head(2))
+        #print(Eta_h.head(2))
+        
+    Folder_mapping = {
+       50 : 30.0,
+       100: 53.0,
+       200: 102.0,
+       400: 202.0,
+       800: 402.0,
+       1600: 815.0,
+       3200: 1606.0
+    }
+    
+    if isinstance(Folders, list)==False:
+        Folders = [Folders]
+
+        
+    Folders = [Folder_mapping[i] for i in Folders]
+
     try:
-        n = Eta_h[:,0]  #The first column of all .txt file contain n
-        Eta_h = Eta_h[:,1:]
-        Eta_phi = Eta_phi[:,1:]
+        Eta_h   = Eta_h[Folders]
+        Eta_phi = Eta_phi[Folders]
+        #print(Eta_h.head())
+        #print(Eta_phi.head())
     except:
-        n = np.array([Eta_h[0]])
-        Eta_h = Eta_h[1:].reshape(1,-1)
-        Eta_phi = Eta_phi[1:].reshape(1,-1)     
-        print(Eta_h.shape,Eta_phi.shape) 
+        print("The Data for passed list of Folder is not currently present in exisitng .txt files,please Run the analysis and save the results for interested Folder_list")
+        raise
         
+
+
     #Define Alpha
     alpha = np.linspace(0.01,0.99,50)
     Eta_alpha  = np.sqrt(2)*erfinv(2*alpha-1)
     
     #Placeholder for DAlpha
+    n = Eta_h.columns.values
     Dalpha  = np.zeros(shape=(2,len(n),len(alpha))) 
     #Shape => (#2 for H,phi; #n for train_set; #alpha we are checking)
-    print(Dalpha.shape)
+    
     #Loop over different n,i.e Training dataset
-    for i in range(len(n)):   
+    for i,value in enumerate(n):   
         #Loop over different alpha value
         for index,element in enumerate(Eta_alpha):
             # For h
-            Dalpha[0][i][index] = np.mean(Eta_h[i] <= element)
+            Dalpha[0][i][index] = np.mean(Eta_h[value] <= element)
             # For Phi
-            Dalpha[1][i][index] = np.mean(Eta_phi[i] <= element)
+            Dalpha[1][i][index] = np.mean(Eta_phi[value] <= element)
             
     
     #************plotting rouitne****************************
@@ -194,13 +227,13 @@ def Plot(Eta_h = None,Eta_phi = None, From_txt=False,SavePlot=False):
     for i in range(len(n)):
         #For H
         #axs[0].scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
-        axs.scatter(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
+        axs.plot(alpha,Dalpha[0][i],label = r"$n = $"+" "+str(n[i]))
         #For Phi
         #axs[1].scatter(alpha,Dalpha[1][i],label = r"$n = $"+" "+str(n[i]))
         
     axs.plot(alpha,alpha,linestyle='--',color = 'k')
     axs.set_xlabel(r"$\alpha$")
-    axs.set_ylabel(r"$(D_{\alpha},h(s))$")
+    axs.set_ylabel(r"$D_{\alpha}$")
     axs.legend()
     
     #axs[1].plot(alpha,alpha,linestyle='--',color = 'k')
@@ -267,10 +300,10 @@ def run_analysis(Folder_list,isSave):
     del_file() 
     
     if isSave == True:
-        np.savetxt("Eta_h.txt",   Eta_h)
-        np.savetxt("Eta_phi.txt", Eta_phi)
+        np.savetxt("Eta_h.txt",   Eta_h.T)
+        np.savetxt("Eta_phi.txt", Eta_phi.T)
         
-    return Eta_h,Eta_phi
+    return Eta_h.T,Eta_phi.T
 
 
 if __name__ == "__main__":
@@ -298,6 +331,6 @@ if __name__ == "__main__":
 
     if RunAnalysis == True:
         Eta_h,Eta_phi = run_analysis(Folder_list,isSave)
-        Plot(Eta_h,Eta_phi,From_txt=False,SavePlot = isSave)
+        Plot(Eta_h,Eta_phi,From_txt=False,SavePlot = isSave,Folders=Folder_list)
     else:
-        Plot(From_txt = True, SavePlot = isSave)
+        Plot(From_txt = True, SavePlot = isSave, Folders=Folder_list)
