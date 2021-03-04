@@ -169,7 +169,7 @@ def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePl
     fig, axs = plt.subplots(1,2, figsize=(14, 7), facecolor='w', edgecolor='k')
     axs = axs.ravel()
     #read labels for n, to plot
-    n = RMSE_h[:,0]  #The first column of all .txt file contain n
+    n = RMSE_h[:,0].astype(int)  #The first column of all .txt file contain n
     
     df1 = pd.DataFrame(MAD_h[:,1:].T,columns=n).assign(Data=r"$h$")  #Skip first column
     df2 = pd.DataFrame(MAD_phi[:,1:].T,columns=n).assign(Data=r"$\Phi$")
@@ -185,6 +185,7 @@ def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePl
     axs[0].set_xlabel(r'$n$')
     axs[0].set_ylabel('MAD')
     axs[0].set_yscale('log')
+    axs[0].get_legend().remove()
     
     #cdf = pd.concat([df3, df4])  
     cdf = df3                                #Plot only h, if you want to plot h & phi uncomment above line
@@ -194,6 +195,7 @@ def Plot(RMSE_h=None,RMSE_phi=None,MAD_h=None,MAD_phi=None,From_txt=False,SavePl
     axs[1].set_xlabel(r'$n$')
     axs[1].set_ylabel("RMSE")
     axs[1].set_yscale('log')
+    axs[1].get_legend().remove()
 
     if SavePlot == True:
         plt.savefig("TestAnalysis.pdf",bbox_inches='tight', pad_inches=0.25)
