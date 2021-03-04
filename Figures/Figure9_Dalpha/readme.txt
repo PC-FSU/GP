@@ -24,7 +24,8 @@
   
 #*****************************************************.txt file description*************************************************************
 
-Note: I am calling Xi (Greek symbol used in Dalpha notation) Eta.
+Note: I am calling Xi (Greek symbol used in Dalpha notation) Eta. I also didn't drop the label, Figure you would be needing 
+      while doing analysis.
 
 # Eta_h.txt ==> Contain the Eta_alpha for h(s). The shape of file => (1 + N*n_test, Len(Folder_list)).
 #		 
